@@ -13,22 +13,6 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       keyframes: {
-        "float-slow": {
-          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
-          "50%": { transform: "translateY(-20px) rotate(5deg)" },
-        },
-        "float-medium": {
-          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
-          "50%": { transform: "translateY(-15px) rotate(-3deg)" },
-        },
-        "float-fast": {
-          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
-          "50%": { transform: "translateY(-10px) rotate(8deg)" },
-        },
-        "pulse-glow": {
-          "0%, 100%": { opacity: "0.4" },
-          "50%": { opacity: "0.8" },
-        },
         "slide-up": {
           "0%": { transform: "translateY(40px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
@@ -45,20 +29,30 @@ const config: Config = {
           "0%": { transform: "translateY(0)" },
           "100%": { transform: "translateY(60px)" },
         },
-        "line-draw": {
-          "0%": { strokeDashoffset: "1000" },
-          "100%": { strokeDashoffset: "0" },
+        "blob-drift-1": {
+          "0%, 100%": { transform: "translate(0px, 0px) scale(1)" },
+          "25%": { transform: "translate(50px, -70px) scale(1.06)" },
+          "50%": { transform: "translate(-40px, 50px) scale(0.96)" },
+          "75%": { transform: "translate(70px, 30px) scale(1.04)" },
+        },
+        "blob-drift-2": {
+          "0%, 100%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(-60px, 50px) scale(1.08)" },
+          "66%": { transform: "translate(40px, -60px) scale(0.93)" },
+        },
+        "blob-drift-3": {
+          "0%, 100%": { transform: "translate(0px, 0px) scale(1)" },
+          "50%": { transform: "translate(-30px, -40px) scale(1.05)" },
         },
       },
       animation: {
-        "float-slow": "float-slow 8s ease-in-out infinite",
-        "float-medium": "float-medium 6s ease-in-out infinite",
-        "float-fast": "float-fast 4s ease-in-out infinite",
-        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
         "slide-up": "slide-up 0.8s ease-out forwards",
         "fade-in": "fade-in 1s ease-out forwards",
         "spin-slow": "spin-slow 20s linear infinite",
-        "grid-move": "grid-move 8s linear infinite",
+        "grid-move": "grid-move 12s linear infinite",
+        "blob-drift-1": "blob-drift-1 35s ease-in-out infinite",
+        "blob-drift-2": "blob-drift-2 45s ease-in-out infinite",
+        "blob-drift-3": "blob-drift-3 28s ease-in-out infinite",
       },
     },
   },

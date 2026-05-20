@@ -3,33 +3,52 @@
 import { useState } from "react";
 import Link from "next/link";
 
-// ─── Animated background grid ───────────────────────────────────────────────
+// ─── Animated Background ─────────────────────────────────────────────────────
 function GridBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Moving grid */}
+      {/* Subtle scrolling grid */}
+      <div className="absolute inset-0 grid-bg animate-grid-move" />
+
+      {/* Drifting glow blobs */}
       <div
-        className="absolute inset-0 grid-bg opacity-100"
-        style={{ animation: "grid-move 8s linear infinite" }}
-      />
-      {/* Radial vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,255,255,0.04),transparent)]" />
-      {/* Floating geometric shapes */}
-      <div className="animate-float-slow absolute top-20 left-[10%] w-32 h-32 rounded-full border border-white/5 opacity-40" />
-      <div className="animate-float-medium absolute top-40 right-[15%] w-20 h-20 rounded-full border border-white/8 opacity-30" />
-      <div
-        className="animate-spin-slow absolute top-[60%] left-[5%] w-48 h-48 opacity-[0.03]"
+        className="absolute rounded-full bg-white animate-blob-drift-1"
         style={{
-          background:
-            "conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.5) 60deg, transparent 120deg)",
-          borderRadius: "8px",
+          width: "750px",
+          height: "750px",
+          top: "-280px",
+          left: "-200px",
+          filter: "blur(160px)",
+          opacity: 0.04,
         }}
       />
-      <div className="animate-float-fast absolute bottom-[30%] right-[8%] w-16 h-16 border border-white/5 rotate-45 opacity-30" />
-      <div className="animate-float-slow absolute top-[35%] right-[25%] w-3 h-3 bg-white/10 rounded-full" />
-      <div className="animate-float-medium absolute top-[70%] left-[30%] w-2 h-2 bg-white/15 rounded-full" />
-      <div className="animate-pulse-glow absolute top-[15%] left-[45%] w-1 h-24 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-      <div className="animate-pulse-glow absolute top-[55%] right-[35%] w-1 h-16 bg-gradient-to-b from-transparent via-white/8 to-transparent" />
+      <div
+        className="absolute rounded-full bg-white animate-blob-drift-2"
+        style={{
+          width: "550px",
+          height: "550px",
+          bottom: "-180px",
+          right: "-160px",
+          filter: "blur(130px)",
+          opacity: 0.03,
+        }}
+      />
+      <div
+        className="absolute rounded-full bg-white animate-blob-drift-3"
+        style={{
+          width: "380px",
+          height: "380px",
+          top: "45%",
+          left: "45%",
+          filter: "blur(100px)",
+          opacity: 0.025,
+        }}
+      />
+
+      {/* Edge vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_50%_50%,transparent_20%,rgba(0,0,0,0.45)_100%)]" />
+      {/* Top fade */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_35%_at_50%_0%,rgba(255,255,255,0.04),transparent)]" />
     </div>
   );
 }
@@ -45,14 +64,15 @@ function Navbar() {
         <span className="font-semibold text-white tracking-tight">TradePosts</span>
         <span className="text-white/30 text-sm">.io</span>
       </div>
-      <div className="hidden md:flex items-center gap-8 text-sm text-white/50">
-        <a href="#benefits" className="hover:text-white/80 transition-colors">Benefits</a>
+      <div className="hidden md:flex items-center gap-8 text-sm text-white/40">
+        <a href="#how-it-works" className="hover:text-white/80 transition-colors">How it works</a>
+        <a href="#before-after" className="hover:text-white/80 transition-colors">Results</a>
         <a href="#pricing" className="hover:text-white/80 transition-colors">Pricing</a>
         <a href="#faq" className="hover:text-white/80 transition-colors">FAQ</a>
       </div>
       <Link
         href="/login"
-        className="text-sm px-4 py-2 rounded-lg glass hover:bg-white/10 text-white/70 hover:text-white transition-all"
+        className="text-sm px-4 py-2 rounded-lg glass hover:bg-white/10 text-white/60 hover:text-white transition-all"
       >
         Sign in
       </Link>
@@ -63,66 +83,100 @@ function Navbar() {
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 function Hero() {
   return (
-    <section className="relative z-10 flex flex-col items-center text-center px-6 pt-24 pb-32">
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-white/50 mb-10 animate-fade-in">
-        <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse" />
-        AI-powered · Google Business Profile · Set it &amp; forget it
+    <section className="relative z-10 flex flex-col items-center text-center px-6 pt-20 pb-28">
+      {/* Badge */}
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs text-white/40 mb-10 animate-fade-in">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60 animate-pulse" />
+        Powered by Groq · Llama · Google Business API
       </div>
 
-      <h1 className="text-gradient text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] max-w-4xl mb-6 animate-slide-up">
+      {/* Headline */}
+      <h1 className="text-gradient text-5xl md:text-[72px] font-bold tracking-[-0.03em] leading-[1.02] max-w-4xl mb-6 animate-slide-up">
         Your Google Business<br />posts, on autopilot.
       </h1>
 
-      <p className="text-white/40 text-lg md:text-xl max-w-xl leading-relaxed mb-12 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-        4 professional posts per month, generated by AI and published automatically to your Google Business Profile. Built for plumbers, electricians, HVAC &amp; roofers.
+      {/* Sub-headline */}
+      <p className="text-white/35 text-lg md:text-xl max-w-lg leading-relaxed mb-10 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        4 professional posts per month, generated by specialized AI and published automatically to your Google Business Profile.
+        Built for plumbers, electricians, HVAC &amp; roofers.
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+      {/* CTA buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 animate-slide-up" style={{ animationDelay: "0.15s" }}>
         <Link
           href="/login"
-          className="px-6 py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="px-7 py-3.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] tracking-tight"
         >
-          Start free trial — 14 days
+          Start free — 14 days
         </Link>
         <a
-          href="#benefits"
-          className="px-6 py-3 rounded-xl glass text-white/60 hover:text-white text-sm font-medium transition-all hover:bg-white/8"
+          href="#how-it-works"
+          className="px-7 py-3.5 rounded-xl glass text-white/50 hover:text-white text-sm font-medium transition-all hover:bg-white/8"
         >
           See how it works →
         </a>
       </div>
 
-      <p className="mt-6 text-white/20 text-xs animate-fade-in" style={{ animationDelay: "0.4s" }}>
-        No credit card required · Cancel anytime · 2-min setup
+      {/* Trust line */}
+      <p className="mt-5 text-white/20 text-xs animate-fade-in tracking-wide" style={{ animationDelay: "0.3s" }}>
+        No credit card required &nbsp;·&nbsp; 2-minute setup &nbsp;·&nbsp; Cancel anytime
       </p>
 
-      {/* Mock dashboard preview */}
-      <div className="mt-20 w-full max-w-3xl glass-bright rounded-2xl p-1 animate-slide-up" style={{ animationDelay: "0.3s" }}>
-        <div className="rounded-xl bg-white/[0.02] p-6 relative overflow-hidden">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-            <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-            <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
-            <div className="ml-3 h-5 rounded-md bg-white/5 w-48" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {["Jan 7", "Jan 14", "Jan 21", "Jan 28"].map((date, i) => (
-              <div key={i} className="glass rounded-lg p-3">
-                <div className="text-[10px] text-white/30 mb-2">{date}</div>
-                <div className="space-y-1.5">
-                  <div className="h-1.5 bg-white/10 rounded-full w-full" />
-                  <div className="h-1.5 bg-white/10 rounded-full w-3/4" />
-                  <div className="h-1.5 bg-white/10 rounded-full w-5/6" />
-                  <div className="h-1.5 bg-white/10 rounded-full w-2/3" />
-                </div>
-                <div className="mt-3 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-white/30 animate-pulse" />
-                  <span className="text-[9px] text-white/25">
-                    {i < 2 ? "Published" : "Scheduled"}
-                  </span>
-                </div>
+      {/* Dashboard mockup */}
+      <div className="mt-20 w-full max-w-3xl animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <div className="glass-bright rounded-2xl p-1">
+          <div className="rounded-xl bg-white/[0.02] p-6">
+            {/* Window chrome */}
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+              <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+              <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+              <div className="ml-3 flex items-center gap-2">
+                <div className="h-4 rounded bg-white/5 w-40" />
               </div>
-            ))}
+              <div className="ml-auto flex items-center gap-2">
+                <div className="h-4 rounded bg-white/5 w-16" />
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              {[
+                { label: "Posts published", value: "48", change: "+12 this month" },
+                { label: "Profile views", value: "2.4k", change: "+340% vs before" },
+                { label: "Calls from maps", value: "31", change: "+8 this week" },
+              ].map((stat, i) => (
+                <div key={i} className="glass rounded-lg p-3">
+                  <div className="text-[10px] text-white/25 mb-1">{stat.label}</div>
+                  <div className="text-xl font-bold text-white/80">{stat.value}</div>
+                  <div className="text-[10px] text-emerald-400/50 mt-0.5">{stat.change}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Posts calendar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { date: "Jan 7", status: "Published", title: "Winter pipe protection tips" },
+                { date: "Jan 14", status: "Published", title: "Emergency leak repair—24/7" },
+                { date: "Jan 21", status: "Scheduled", title: "Boiler service special offer" },
+                { date: "Jan 28", status: "Scheduled", title: "New customer discount" },
+              ].map((post, i) => (
+                <div key={i} className="glass rounded-lg p-3">
+                  <div className="text-[10px] text-white/25 mb-2">{post.date}</div>
+                  <div className="space-y-1.5 mb-3">
+                    <div className="h-1.5 bg-white/10 rounded-full w-full" />
+                    <div className="h-1.5 bg-white/10 rounded-full w-4/5" />
+                    <div className="h-1.5 bg-white/8 rounded-full w-3/5" />
+                  </div>
+                  <div className="text-[9px] text-white/30 leading-tight mb-2">{post.title}</div>
+                  <div className="flex items-center gap-1">
+                    <div className={`w-1.5 h-1.5 rounded-full ${i < 2 ? "bg-emerald-400/60" : "bg-white/20"} ${i < 2 ? "animate-pulse" : ""}`} />
+                    <span className="text-[9px] text-white/25">{post.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -130,108 +184,286 @@ function Hero() {
   );
 }
 
-// ─── Bento Grid Benefits ──────────────────────────────────────────────────────
-function Benefits() {
-  const industries = [
-    { icon: "🔧", label: "Plumbers", desc: "Emergency repairs & installations" },
-    { icon: "⚡", label: "Electricians", desc: "Panels, wiring & EV chargers" },
-    { icon: "❄️", label: "HVAC", desc: "AC, heating & air quality" },
-    { icon: "🏠", label: "Roofers", desc: "Repairs, gutters & replacements" },
+// ─── Before / After ───────────────────────────────────────────────────────────
+function BeforeAfter() {
+  const before = [
+    "No time for marketing — too busy on jobs",
+    "Empty Google Business Profile, no recent posts",
+    "Dropping in local search, buried under competitors",
+    "Zero new customers from Google Maps",
+    "Stress about writing posts every single week",
+  ];
+
+  const after = [
+    "AI writes trade-specific posts automatically",
+    "Weekly posts go live — without touching a phone",
+    "Rising in Google Maps, more visibility locally",
+    "Steady stream of local calls from new customers",
+    "Zero effort. Just more revenue.",
   ];
 
   return (
-    <section id="benefits" className="relative z-10 px-6 py-24 max-w-6xl mx-auto">
+    <section id="before-after" className="relative z-10 px-6 py-24 max-w-6xl mx-auto">
       <div className="text-center mb-16">
-        <p className="text-white/30 text-sm uppercase tracking-widest mb-4">Why TradePosts</p>
-        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-tight">
-          Built for trades,<br />not tech teams.
+        <p className="text-white/25 text-xs uppercase tracking-[0.2em] mb-4">The difference</p>
+        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-[-0.02em]">
+          Before vs. After TradePosts
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Large card */}
-        <div className="md:col-span-2 glass-bright rounded-2xl p-8 relative overflow-hidden group hover:bg-white/[0.06] transition-all">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.03),transparent_70%)]" />
-          <div className="absolute top-0 right-0 w-48 h-48 rounded-full border border-white/5 translate-x-16 -translate-y-16 group-hover:scale-110 transition-transform duration-700" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Before */}
+        <div className="rounded-2xl border border-white/6 bg-white/[0.02] p-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(239,68,68,0.03),transparent)]" />
           <div className="relative z-10">
-            <div className="w-10 h-10 rounded-xl glass flex items-center justify-center mb-6">
-              <span className="text-lg">🤖</span>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 rounded-lg border border-white/8 bg-white/[0.03] flex items-center justify-center">
+                <span className="text-sm">✕</span>
+              </div>
+              <div>
+                <p className="text-white/20 text-[10px] uppercase tracking-widest">Before</p>
+                <p className="text-white/50 text-sm font-medium">Without TradePosts</p>
+              </div>
             </div>
-            <h3 className="text-white text-2xl font-semibold mb-3">AI that speaks your trade</h3>
-            <p className="text-white/40 text-base leading-relaxed max-w-md">
-              Not generic marketing fluff. Our AI is trained on trade-specific language — it writes like a local expert, not a copywriter who&apos;s never held a wrench.
-            </p>
-          </div>
-        </div>
-
-        {/* Tall card */}
-        <div className="glass rounded-2xl p-6 relative overflow-hidden group hover:bg-white/[0.05] transition-all">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.03),transparent_60%)]" />
-          <div className="relative z-10">
-            <div className="w-10 h-10 rounded-xl glass flex items-center justify-center mb-6">
-              <span className="text-lg">📅</span>
-            </div>
-            <h3 className="text-white text-xl font-semibold mb-3">Zero effort. Truly.</h3>
-            <p className="text-white/40 text-sm leading-relaxed">
-              Connect once. Every week, 4 posts go live automatically. No login required. No content calendar. Just more calls.
-            </p>
-            <div className="mt-6 space-y-2">
-              {["Connect Google Business", "AI writes posts", "Cron publishes weekly", "You get more calls"].map((step, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full glass flex items-center justify-center flex-shrink-0">
-                    <span className="text-[9px] text-white/40">{i + 1}</span>
+            <div className="space-y-4">
+              {before.map((text, i) => (
+                <div key={i} className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-lg border border-white/5 bg-white/[0.02] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-3 h-px bg-white/20" />
                   </div>
-                  <span className="text-white/50 text-xs">{step}</span>
+                  <p className="text-white/30 text-sm leading-relaxed pt-1.5">{text}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Industries row */}
+        {/* After */}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(255,255,255,0.04),transparent)]" />
+          <div className="absolute top-0 right-0 w-48 h-48 rounded-full border border-white/[0.06] translate-x-16 -translate-y-16" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
+                <span className="text-sm text-black font-bold">✓</span>
+              </div>
+              <div>
+                <p className="text-white/30 text-[10px] uppercase tracking-widest">After</p>
+                <p className="text-white font-medium text-sm">With TradePosts.io</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {after.map((text, i) => (
+                <div key={i} className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-lg border border-white/12 bg-white/[0.06] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400/50" />
+                  </div>
+                  <p className="text-white/65 text-sm leading-relaxed pt-1.5">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom CTA nudge */}
+      <div className="mt-8 text-center">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors"
+        >
+          Get the &ldquo;After&rdquo; result for your business →
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+// ─── How it Works ─────────────────────────────────────────────────────────────
+function HowItWorks() {
+  const steps = [
+    {
+      number: "01",
+      title: "Sign in with Google",
+      desc: "Connect your Google Business Profile in one click. No technical knowledge needed — just OAuth. Your account is linked in under 60 seconds.",
+      detail: "Google OAuth · Secure · Read-write access only to your profile",
+    },
+    {
+      number: "02",
+      title: "Choose your trade",
+      desc: "Tell us whether you're a plumber, electrician, HVAC technician, or roofer. Our AI adapts its voice, terminology, and topics to your specific trade.",
+      detail: "Plumbing · Electrical · HVAC · Roofing · and more",
+    },
+    {
+      number: "03",
+      title: "Activate your calendar",
+      desc: "Hit activate. From that moment, 4 professional posts per month go live automatically on your Google Business Profile — every single month, on autopilot.",
+      detail: "Weekly schedule · Auto-publish · No effort required",
+    },
+  ];
+
+  return (
+    <section id="how-it-works" className="relative z-10 px-6 py-24 max-w-6xl mx-auto">
+      <div className="text-center mb-16">
+        <p className="text-white/25 text-xs uppercase tracking-[0.2em] mb-4">Setup</p>
+        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-[-0.02em]">
+          3 steps. That&apos;s it.
+        </h2>
+        <p className="text-white/35 text-base mt-4 max-w-sm mx-auto">
+          Most tradespeople are fully set up in under 2 minutes.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {steps.map((step, i) => (
+          <div key={i} className="glass rounded-2xl p-8 relative overflow-hidden group hover:bg-white/[0.06] transition-all duration-300">
+            {/* Connector line for desktop */}
+            {i < 2 && (
+              <div className="hidden md:block absolute top-12 -right-2 w-4 h-px bg-white/8 z-20" />
+            )}
+            <div className="relative z-10">
+              <div className="text-[10px] text-white/20 font-mono tracking-widest mb-6">{step.number}</div>
+              <h3 className="text-white text-xl font-semibold tracking-tight mb-3">{step.title}</h3>
+              <p className="text-white/35 text-sm leading-relaxed mb-6">{step.desc}</p>
+              <div className="pt-4 border-t border-white/6">
+                <p className="text-white/20 text-[11px] leading-relaxed">{step.detail}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-10 text-center">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          Start in 2 minutes — free trial
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+// ─── Why TradePosts ───────────────────────────────────────────────────────────
+function WhyTradePosts() {
+  const industries = [
+    { code: "PL", label: "Plumbers", desc: "Emergency repairs & installations" },
+    { code: "EL", label: "Electricians", desc: "Panels, wiring & EV chargers" },
+    { code: "HV", label: "HVAC", desc: "AC, heating & air quality" },
+    { code: "RF", label: "Roofers", desc: "Repairs, gutters & replacements" },
+  ];
+
+  return (
+    <section className="relative z-10 px-6 py-24 max-w-6xl mx-auto">
+      <div className="text-center mb-16">
+        <p className="text-white/25 text-xs uppercase tracking-[0.2em] mb-4">Why TradePosts</p>
+        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-[-0.02em]">
+          Built for trades,<br />not tech teams.
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Feature: AI that speaks your trade */}
+        <div className="md:col-span-2 glass-bright rounded-2xl p-8 relative overflow-hidden group hover:bg-white/[0.06] transition-all duration-300">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_50%,rgba(255,255,255,0.03),transparent_65%)]" />
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full border border-white/[0.04] translate-x-20 -translate-y-20 group-hover:scale-110 transition-transform duration-700" />
+          <div className="relative z-10">
+            <div className="w-10 h-10 rounded-xl glass flex items-center justify-center mb-6">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-white/40">
+                <rect x="2" y="4" width="12" height="9" rx="1.5" />
+                <circle cx="5.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                <circle cx="10.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+                <line x1="8" y1="1" x2="8" y2="4" />
+                <line x1="0.5" y1="8.5" x2="2" y2="8.5" />
+                <line x1="14" y1="8.5" x2="15.5" y2="8.5" />
+              </svg>
+            </div>
+            <h3 className="text-white text-2xl font-semibold tracking-tight mb-3">AI that speaks your trade</h3>
+            <p className="text-white/35 text-base leading-relaxed max-w-md">
+              Not generic marketing copy. Our AI — powered by Groq &amp; Llama — is specialized for trade businesses. It writes like a local expert, uses real trade terminology, and sounds exactly like you.
+            </p>
+          </div>
+        </div>
+
+        {/* Feature: Zero effort */}
+        <div className="glass rounded-2xl p-6 relative overflow-hidden group hover:bg-white/[0.05] transition-all duration-300">
+          <div className="relative z-10">
+            <div className="w-10 h-10 rounded-xl glass flex items-center justify-center mb-6">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-white/40">
+                <rect x="1" y="3" width="14" height="12" rx="1.5" />
+                <line x1="1" y1="7" x2="15" y2="7" />
+                <line x1="5" y1="1" x2="5" y2="5" />
+                <line x1="11" y1="1" x2="11" y2="5" />
+              </svg>
+            </div>
+            <h3 className="text-white text-xl font-semibold tracking-tight mb-3">Zero effort. Truly.</h3>
+            <p className="text-white/35 text-sm leading-relaxed">
+              Connect once. Every week, posts go live automatically. No login required. No content calendar. Just more calls.
+            </p>
+            <div className="mt-6 space-y-2.5">
+              {["Connect Google Business", "AI writes posts", "Auto-publishes weekly", "You get more calls"].map((step, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-[9px] text-white/30">{i + 1}</span>
+                  </div>
+                  <span className="text-white/45 text-xs">{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Trade cards */}
         {industries.map((ind, i) => (
-          <div key={i} className="glass rounded-2xl p-5 group hover:bg-white/[0.05] transition-all">
-            <div className="text-2xl mb-3">{ind.icon}</div>
-            <h4 className="text-white font-semibold text-sm mb-1">{ind.label}</h4>
-            <p className="text-white/30 text-xs">{ind.desc}</p>
+          <div key={i} className="glass rounded-2xl p-5 group hover:bg-white/[0.05] transition-all duration-300">
+            <div className="text-[10px] font-mono text-white/20 tracking-[0.2em] mb-3 uppercase">{ind.code}</div>
+            <h4 className="text-white font-semibold text-sm mb-1 tracking-tight">{ind.label}</h4>
+            <p className="text-white/25 text-xs">{ind.desc}</p>
           </div>
         ))}
 
-        {/* Stats card */}
-        <div className="md:col-span-2 glass-bright rounded-2xl p-8 relative overflow-hidden group hover:bg-white/[0.06] transition-all">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_70%)]" />
+        {/* Stats */}
+        <div className="md:col-span-2 glass-bright rounded-2xl p-8 relative overflow-hidden group hover:bg-white/[0.06] transition-all duration-300">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.025),transparent_65%)]" />
           <div className="relative z-10">
             <div className="w-10 h-10 rounded-xl glass flex items-center justify-center mb-6">
-              <span className="text-lg">📈</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-white/40">
+                <polyline points="1,13 5,8 9,10 15,3" />
+                <polyline points="11,3 15,3 15,7" />
+              </svg>
             </div>
-            <h3 className="text-white text-2xl font-semibold mb-3">More &ldquo;near me&rdquo; calls</h3>
-            <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-md">
-              Google ranks businesses that post regularly higher in local searches. Businesses posting 4x/month get up to 5× more profile views than those who don&apos;t.
+            <h3 className="text-white text-2xl font-semibold tracking-tight mb-3">More &ldquo;near me&rdquo; calls</h3>
+            <p className="text-white/35 text-sm leading-relaxed mb-6 max-w-md">
+              Google ranks businesses that post regularly higher in local searches. Businesses posting 4×/month get significantly more profile views than those who don&apos;t post.
             </p>
-            <div className="flex gap-8">
+            <div className="flex gap-10">
               <div>
-                <div className="text-3xl font-bold text-gradient">5×</div>
-                <div className="text-white/30 text-xs mt-1">more profile views</div>
+                <div className="text-3xl font-bold text-gradient tracking-tight">5×</div>
+                <div className="text-white/25 text-xs mt-1">more profile views</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gradient">4/mo</div>
-                <div className="text-white/30 text-xs mt-1">posts auto-published</div>
+                <div className="text-3xl font-bold text-gradient tracking-tight">4/mo</div>
+                <div className="text-white/25 text-xs mt-1">posts auto-published</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gradient">2min</div>
-                <div className="text-white/30 text-xs mt-1">to get started</div>
+                <div className="text-3xl font-bold text-gradient tracking-tight">2min</div>
+                <div className="text-white/25 text-xs mt-1">to get started</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Additional benefit */}
-        <div className="glass rounded-2xl p-6 group hover:bg-white/[0.05] transition-all">
+        {/* Voice card */}
+        <div className="glass rounded-2xl p-6 group hover:bg-white/[0.05] transition-all duration-300">
           <div className="w-10 h-10 rounded-xl glass flex items-center justify-center mb-4">
-            <span className="text-lg">🔒</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" className="text-white/40">
+              <rect x="3" y="7" width="10" height="8" rx="1.5" />
+              <path d="M5 7V5.5a3 3 0 016 0V7" />
+            </svg>
           </div>
-          <h4 className="text-white font-semibold mb-2">Your brand, your voice</h4>
-          <p className="text-white/40 text-sm leading-relaxed">
+          <h4 className="text-white font-semibold mb-2 tracking-tight">Your brand, your voice</h4>
+          <p className="text-white/35 text-sm leading-relaxed">
             Set your tone — professional, friendly, or local. Every post sounds like you wrote it.
           </p>
         </div>
@@ -265,7 +497,7 @@ function Pricing() {
       name: "Agency",
       price: annual ? 31 : 39,
       period: annual ? "/mo, billed yearly" : "/month",
-      desc: "For marketing agencies managing multiple clients",
+      desc: "For agencies managing multiple clients",
       features: [
         "Up to 5 locations",
         "4 posts per location per month",
@@ -282,27 +514,27 @@ function Pricing() {
   return (
     <section id="pricing" className="relative z-10 px-6 py-24 max-w-6xl mx-auto">
       <div className="text-center mb-16">
-        <p className="text-white/30 text-sm uppercase tracking-widest mb-4">Pricing</p>
-        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-tight mb-6">
+        <p className="text-white/25 text-xs uppercase tracking-[0.2em] mb-4">Pricing</p>
+        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-[-0.02em] mb-5">
           Less than one service call.
         </h2>
-        <p className="text-white/40 text-base max-w-sm mx-auto">
-          At $19/mo, TradePosts pays for itself the first time a new customer calls from your Google profile.
+        <p className="text-white/35 text-base max-w-sm mx-auto">
+          At $19/mo, TradePosts pays for itself the moment a new customer calls from your profile.
         </p>
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-3 mt-8">
-          <span className={`text-sm transition-colors ${!annual ? "text-white/70" : "text-white/30"}`}>Monthly</span>
+          <span className={`text-sm transition-colors ${!annual ? "text-white/60" : "text-white/25"}`}>Monthly</span>
           <button
             onClick={() => setAnnual(!annual)}
-            className={`relative w-10 h-6 rounded-full glass transition-all ${annual ? "bg-white/20" : "bg-white/5"}`}
+            className={`relative w-10 h-6 rounded-full border transition-all ${annual ? "border-white/20 bg-white/15" : "border-white/8 bg-white/4"}`}
           >
             <span
               className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${annual ? "left-5" : "left-1"}`}
             />
           </button>
-          <span className={`text-sm transition-colors ${annual ? "text-white/70" : "text-white/30"}`}>
-            Annual <span className="text-white/40 text-xs">–20%</span>
+          <span className={`text-sm transition-colors ${annual ? "text-white/60" : "text-white/25"}`}>
+            Annual <span className="text-white/30 text-xs">–20%</span>
           </span>
         </div>
       </div>
@@ -311,39 +543,39 @@ function Pricing() {
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`rounded-2xl p-8 relative overflow-hidden transition-all ${
+            className={`rounded-2xl p-8 relative overflow-hidden transition-all duration-300 ${
               plan.highlight
-                ? "glass-bright border-white/15 hover:bg-white/10"
+                ? "glass-bright hover:bg-white/[0.09]"
                 : "glass hover:bg-white/[0.05]"
             }`}
           >
             {plan.highlight && (
-              <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-white/10 text-[10px] text-white/50 font-medium">
+              <div className="absolute top-4 right-4 px-2.5 py-0.5 rounded-full border border-white/12 bg-white/8 text-[10px] text-white/40 font-medium tracking-wide">
                 Popular
               </div>
             )}
             <div className="mb-6">
-              <h3 className="text-white font-semibold text-lg mb-1">{plan.name}</h3>
-              <p className="text-white/30 text-xs mb-4">{plan.desc}</p>
-              <div className="flex items-end gap-1">
-                <span className="text-4xl font-bold text-gradient">${plan.price}</span>
-                <span className="text-white/30 text-sm mb-1">{plan.period}</span>
+              <h3 className="text-white font-semibold text-lg mb-1 tracking-tight">{plan.name}</h3>
+              <p className="text-white/25 text-xs mb-5">{plan.desc}</p>
+              <div className="flex items-end gap-1.5">
+                <span className="text-4xl font-bold text-gradient tracking-tight">${plan.price}</span>
+                <span className="text-white/25 text-sm mb-1">{plan.period}</span>
               </div>
             </div>
             <ul className="space-y-3 mb-8">
               {plan.features.map((f) => (
-                <li key={f} className="flex items-center gap-3 text-white/50 text-sm">
-                  <span className="w-4 h-4 rounded-full glass flex items-center justify-center flex-shrink-0 text-white/40 text-[9px]">✓</span>
+                <li key={f} className="flex items-center gap-3 text-white/45 text-sm">
+                  <span className="w-4 h-4 rounded-full border border-white/10 flex items-center justify-center flex-shrink-0 text-white/35 text-[9px]">✓</span>
                   {f}
                 </li>
               ))}
             </ul>
             <Link
               href="/login"
-              className={`block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all tracking-tight ${
                 plan.highlight
                   ? "bg-white text-black hover:bg-white/90 hover:scale-[1.01]"
-                  : "glass hover:bg-white/10 text-white/70 hover:text-white"
+                  : "glass hover:bg-white/10 text-white/60 hover:text-white"
               }`}
             >
               {plan.cta}
@@ -352,8 +584,8 @@ function Pricing() {
         ))}
       </div>
 
-      <p className="text-center text-white/20 text-xs mt-8">
-        No credit card required to start · Cancel anytime · Instant setup
+      <p className="text-center text-white/18 text-xs mt-8 tracking-wide">
+        No credit card required to start &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Instant setup
       </p>
     </section>
   );
@@ -366,19 +598,19 @@ function FAQ() {
   const faqs = [
     {
       q: "Do I need to know anything about SEO or marketing?",
-      a: "Not at all. You connect your Google Business Profile once, tell us your business type, and we handle everything. Most users are set up in under 2 minutes.",
+      a: "Not at all. You connect your Google Business Profile once, tell us your trade, and we handle everything. Most users are fully set up in under 2 minutes.",
     },
     {
       q: "What kinds of posts does TradePosts write?",
-      a: "We write posts about your services, seasonal promotions, tips for homeowners, and local area content. Every post is tailored to your trade and business name — nothing generic.",
+      a: "We write posts about your services, seasonal promotions, tips for homeowners, and local area content. Every post is tailored to your trade and business — nothing generic.",
     },
     {
       q: "Can I review posts before they go live?",
-      a: "Yes. During your trial you can preview all posts in your dashboard before anything goes live. Once you upgrade, posts publish automatically — but you can always pause or edit them.",
+      a: "Yes. During your trial you can preview all posts in your dashboard before anything publishes. Once you upgrade, posts go live automatically — but you can always pause or edit them.",
     },
     {
       q: "What happens if I have multiple locations?",
-      a: "The Agency plan covers up to 5 locations, each with its own posting schedule and AI voice. You manage all of them from a single dashboard.",
+      a: "The Agency plan covers up to 5 locations, each with its own posting schedule and AI voice. Manage all of them from a single dashboard.",
     },
     {
       q: "Is this against Google's terms of service?",
@@ -386,32 +618,32 @@ function FAQ() {
     },
     {
       q: "What if I want to cancel?",
-      a: "Cancel anytime from your account settings — no questions asked. Your posts will stop publishing at the end of your billing period.",
+      a: "Cancel anytime from your account settings — no questions asked. Your posts stop publishing at the end of your billing period.",
     },
   ];
 
   return (
     <section id="faq" className="relative z-10 px-6 py-24 max-w-3xl mx-auto">
       <div className="text-center mb-16">
-        <p className="text-white/30 text-sm uppercase tracking-widest mb-4">FAQ</p>
-        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-tight">
+        <p className="text-white/25 text-xs uppercase tracking-[0.2em] mb-4">FAQ</p>
+        <h2 className="text-gradient text-4xl md:text-5xl font-bold tracking-[-0.02em]">
           Questions answered.
         </h2>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {faqs.map((faq, i) => (
           <div
             key={i}
-            className="glass rounded-xl overflow-hidden hover:bg-white/[0.04] transition-all"
+            className="rounded-xl border border-white/6 bg-white/[0.02] overflow-hidden hover:bg-white/[0.035] transition-all duration-200"
           >
             <button
               onClick={() => setOpen(open === i ? null : i)}
               className="w-full flex items-center justify-between px-6 py-5 text-left"
             >
-              <span className="text-white/70 text-sm font-medium pr-8">{faq.q}</span>
+              <span className="text-white/60 text-sm font-medium pr-8">{faq.q}</span>
               <span
-                className={`text-white/30 text-lg flex-shrink-0 transition-transform duration-200 ${
+                className={`text-white/25 text-xl flex-shrink-0 transition-transform duration-200 font-light ${
                   open === i ? "rotate-45" : ""
                 }`}
               >
@@ -420,7 +652,7 @@ function FAQ() {
             </button>
             {open === i && (
               <div className="px-6 pb-5">
-                <p className="text-white/40 text-sm leading-relaxed">{faq.a}</p>
+                <p className="text-white/35 text-sm leading-relaxed">{faq.a}</p>
               </div>
             )}
           </div>
@@ -430,33 +662,30 @@ function FAQ() {
   );
 }
 
-// ─── CTA ─────────────────────────────────────────────────────────────────────
+// ─── Final CTA ────────────────────────────────────────────────────────────────
 function CTA() {
   return (
     <section className="relative z-10 px-6 py-24 max-w-6xl mx-auto">
       <div className="glass-bright rounded-3xl p-12 md:p-20 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_100%,rgba(255,255,255,0.04),transparent)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-white/10 via-transparent to-transparent" />
-
-        {/* Floating orbits */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-white/[0.04] animate-spin-slow pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full border border-white/[0.04] animate-spin-slow pointer-events-none" style={{ animationDirection: "reverse", animationDuration: "15s" }} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_110%,rgba(255,255,255,0.04),transparent)]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-white/[0.03] animate-spin-slow pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border border-white/[0.04] pointer-events-none" style={{ animation: "spin-slow 15s linear infinite reverse" }} />
 
         <div className="relative z-10">
-          <p className="text-white/30 text-sm uppercase tracking-widest mb-6">Get started today</p>
-          <h2 className="text-gradient text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            Start ranking higher.<br />Stop worrying about posts.
+          <p className="text-white/25 text-xs uppercase tracking-[0.2em] mb-6">Get started today</p>
+          <h2 className="text-gradient text-4xl md:text-6xl font-bold tracking-[-0.02em] mb-6">
+            Stop losing customers<br />to competitors who post.
           </h2>
-          <p className="text-white/40 text-base max-w-md mx-auto mb-10">
-            Join tradespeople who let AI handle their Google presence while they focus on the job.
+          <p className="text-white/35 text-base max-w-md mx-auto mb-10">
+            Every week without posts is a week your competitors get the call instead. Fix that in 2 minutes.
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-all hover:scale-[1.02] active:scale-[0.98] tracking-tight"
           >
             Start your 14-day free trial →
           </Link>
-          <p className="mt-4 text-white/20 text-xs">No credit card · 2-minute setup · Cancel anytime</p>
+          <p className="mt-4 text-white/18 text-xs tracking-wide">No credit card &nbsp;·&nbsp; 2-minute setup &nbsp;·&nbsp; Cancel anytime</p>
         </div>
       </div>
     </section>
@@ -466,20 +695,20 @@ function CTA() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="relative z-10 border-t border-white/5 px-6 py-8 max-w-6xl mx-auto">
+    <footer className="relative z-10 border-t border-white/[0.05] px-6 py-8 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-md bg-white flex items-center justify-center">
             <div className="w-2.5 h-2.5 rounded-sm bg-black" />
           </div>
-          <span className="text-white/40 text-sm">TradePosts.io</span>
+          <span className="text-white/35 text-sm">TradePosts.io</span>
         </div>
-        <div className="flex items-center gap-6 text-white/25 text-xs">
-          <a href="#" className="hover:text-white/50 transition-colors">Privacy</a>
-          <a href="#" className="hover:text-white/50 transition-colors">Terms</a>
-          <a href="mailto:hello@tradeposts.io" className="hover:text-white/50 transition-colors">Contact</a>
+        <div className="flex items-center gap-6 text-white/20 text-xs">
+          <a href="#" className="hover:text-white/45 transition-colors">Privacy</a>
+          <a href="#" className="hover:text-white/45 transition-colors">Terms</a>
+          <a href="mailto:hello@tradeposts.io" className="hover:text-white/45 transition-colors">Contact</a>
         </div>
-        <p className="text-white/20 text-xs">© 2026 TradePosts.io</p>
+        <p className="text-white/18 text-xs">© 2026 TradePosts.io</p>
       </div>
     </footer>
   );
@@ -492,7 +721,9 @@ export default function LandingPage() {
       <GridBackground />
       <Navbar />
       <Hero />
-      <Benefits />
+      <BeforeAfter />
+      <HowItWorks />
+      <WhyTradePosts />
       <Pricing />
       <FAQ />
       <CTA />

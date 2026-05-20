@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import GeneratePostsButton from '../_components/GeneratePostsButton'
 import LocationScheduleForm from './_components/LocationScheduleForm'
 import { LocationCardWrapper, PageHeader, EmptyStateAnimated } from './_components/LocationsAnimated'
+import LocationBusinessAgent from './_components/LocationBusinessAgent'
 
 const ERROR_MESSAGES: Record<string, string> = {
   solo_limit: 'You\'ve reached the 1-location limit on your plan. Upgrade to Agency for up to 10 locations.',
@@ -39,6 +40,12 @@ export default async function LocationsPage({
   const canAddMore = (locations?.length ?? 0) < locationLimit
   const params = await searchParams
   const errorMessage = params.error ? (ERROR_MESSAGES[params.error] ?? `Error: ${params.error}`) : null
+
+  const agentLocations = (locations ?? []).map((l) => ({
+    id: l.id,
+    business_name: l.business_name,
+    business_type: l.business_type ?? '',
+  }))
 
   return (
     <div className="min-h-full p-8">
@@ -100,7 +107,7 @@ export default async function LocationsPage({
                   <>
                     <p className="text-white/25 text-xs mb-4">Want to add another location?</p>
                     <a
-                      href="/api/locations/mock-connect"
+                      href="/api/auth/google"
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 transition-all active:scale-[0.98]"
                     >
                       Connect Google Business →
@@ -145,7 +152,7 @@ export default async function LocationsPage({
                 Connect your Google Business Profile to start auto-publishing posts every week.
               </p>
               <a
-                href="/api/locations/mock-connect"
+                href="/api/auth/google"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 transition-all active:scale-[0.98]"
               >
                 Connect Google Business Profile →
@@ -154,6 +161,8 @@ export default async function LocationsPage({
           </EmptyStateAnimated>
         )}
       </div>
+
+      <LocationBusinessAgent locations={agentLocations} />
     </div>
   )
 }

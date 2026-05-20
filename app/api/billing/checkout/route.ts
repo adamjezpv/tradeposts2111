@@ -13,12 +13,12 @@ function getStripe() {
 function getPriceId(plan: 'solo' | 'agency', billing: 'monthly' | 'annual'): string | undefined {
   const map: Record<string, Record<string, string | undefined>> = {
     solo: {
-      monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY_ID,
-      annual: process.env.STRIPE_PRICE_SOLO_ANNUAL_ID,
+      monthly: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_SOLO_MONTHLY,
+      annual: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL,
     },
     agency: {
-      monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY_ID,
-      annual: process.env.STRIPE_PRICE_AGENCY_ANNUAL_ID,
+      monthly: process.env.STRIPE_PRICE_ID_AGENCY_MONTHLY,
+      annual: process.env.STRIPE_PRICE_ID_AGENCY_ANNUAL,
     },
   }
   return map[plan][billing]
@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
 
     if (!priceId) {
       const envKey = planType === 'agency'
-        ? (billing === 'annual' ? 'STRIPE_PRICE_AGENCY_ANNUAL_ID' : 'STRIPE_PRICE_AGENCY_MONTHLY_ID')
-        : (billing === 'annual' ? 'STRIPE_PRICE_SOLO_ANNUAL_ID' : 'STRIPE_PRICE_SOLO_MONTHLY_ID')
+        ? (billing === 'annual' ? 'STRIPE_PRICE_ID_AGENCY_ANNUAL' : 'STRIPE_PRICE_ID_AGENCY_MONTHLY')
+        : (billing === 'annual' ? 'NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL' : 'NEXT_PUBLIC_STRIPE_PRICE_ID_SOLO_MONTHLY')
       return NextResponse.json(
         { error: `Stripe price not configured: env var ${envKey} is missing or empty` },
         { status: 500 }

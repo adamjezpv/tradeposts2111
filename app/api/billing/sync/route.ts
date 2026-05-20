@@ -12,8 +12,8 @@ function getStripe() {
 
 function mapPriceIdToPlan(priceId: string): 'solo' | 'agency' {
   const agencyPriceIds = [
-    process.env.STRIPE_PRICE_AGENCY_MONTHLY_ID,
-    process.env.STRIPE_PRICE_AGENCY_ANNUAL_ID,
+    process.env.STRIPE_PRICE_ID_AGENCY_MONTHLY,
+    process.env.STRIPE_PRICE_ID_AGENCY_ANNUAL,
   ].filter(Boolean)
   return agencyPriceIds.includes(priceId) ? 'agency' : 'solo'
 }

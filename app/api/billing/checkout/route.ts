@@ -2,19 +2,26 @@ import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-})
+export const dynamic = 'force-dynamic'
 
-const PRICE_MAP: Record<string, Record<string, string | undefined>> = {
-  solo: {
-    monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY_ID,
-    annual: process.env.STRIPE_PRICE_SOLO_ANNUAL_ID,
-  },
-  agency: {
-    monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY_ID,
-    annual: process.env.STRIPE_PRICE_AGENCY_ANNUAL_ID,
-  },
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-04-22.dahlia',
+  })
+}
+
+function getPriceId(plan: 'solo' | 'agency', billing: 'monthly' | 'annual'): string | undefined {
+  const map: Record<string, Record<string, string | undefined>> = {
+    solo: {
+      monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY_ID,
+      annual: process.env.STRIPE_PRICE_SOLO_ANNUAL_ID,
+    },
+    agency: {
+      monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY_ID,
+      annual: process.env.STRIPE_PRICE_AGENCY_ANNUAL_ID,
+    },
+  }
+  return map[plan][billing]
 }
 
 export async function POST(request: NextRequest) {
@@ -33,7 +40,7 @@ export async function POST(request: NextRequest) {
     const planType = (body.plan === 'agency' ? 'agency' : 'solo') as 'solo' | 'agency'
     const billing = body.billing === 'annual' ? 'annual' : 'monthly'
 
-    const priceId = PRICE_MAP[planType][billing]
+    const priceId = getPriceId(planType, billing)
     console.log(`[checkout] plan=${planType} billing=${billing} priceId=${priceId}`)
 
     if (!priceId) {
@@ -52,6 +59,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    const stripe = getStripe()
 
     const { data: profile } = await supabase
       .from('users')
@@ -88,7 +97,7 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/dashboard?upgraded=1`,
+      success_url: `${baseUrl}/dashboard/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/upgrade`,
       customer_update: {
         address: 'auto',

@@ -1,9 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
-import confetti from 'canvas-confetti'
 import CalendarPostModal, { parsePostContent } from './CalendarPostModal'
 
 type Post = {
@@ -58,25 +56,8 @@ export default function PremiumDashboard({
   industry,
   firstLocationName,
 }: Props) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
   const isAgency = isAgencyPlan(plan)
   const [view, setView] = useState<'calendar' | 'queue'>('calendar')
-
-  useEffect(() => {
-    if (searchParams.get('upgraded') === '1') {
-      router.replace('/dashboard')
-
-      const end = Date.now() + 3000
-      const colors = ['#ffffff', '#d4d4d4', '#a3a3a3']
-      const frame = () => {
-        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors })
-        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors })
-        if (Date.now() < end) requestAnimationFrame(frame)
-      }
-      requestAnimationFrame(frame)
-    }
-  }, [router, searchParams])
   const today = new Date()
   const [calMonth, setCalMonth] = useState(today.getMonth())
   const [calYear, setCalYear] = useState(today.getFullYear())

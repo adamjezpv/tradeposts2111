@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, type Variants } from 'framer-motion'
 import { UpgradeButton } from './UpgradeButton'
 
@@ -21,16 +19,6 @@ type Props = {
 }
 
 export default function TrialDashboard({ firstName, trialDaysLeft, trialProgress, posts }: Props) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    if (searchParams.get('upgraded') === '1') {
-      router.replace('/dashboard')
-      router.refresh()
-    }
-  }, [router, searchParams])
-
   const containerVariants: Variants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },

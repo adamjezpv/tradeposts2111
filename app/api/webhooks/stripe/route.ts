@@ -5,9 +5,11 @@ import { NextRequest, NextResponse } from 'next/server'
 // Required by Next.js App Router to prevent body parsing — Stripe needs the raw bytes for signature verification
 export const dynamic = 'force-dynamic'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-})
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-04-22.dahlia',
+  })
+}
 
 function createAdminClient() {
   return createClient(
@@ -36,6 +38,8 @@ export async function POST(request: NextRequest) {
   if (!signature) {
     return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
   }
+
+  const stripe = getStripe()
 
   let event: Stripe.Event
   try {

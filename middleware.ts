@@ -20,7 +20,13 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase misconfigured — treat as unauthenticated
+  }
 
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -30,5 +36,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard(.*)', '/locations(.*)', '/posts(.*)', '/settings(.*)'],
+  matcher: ['/dashboard(.*)', '/locations(.*)', '/posts(.*)', '/settings(.*)', '/upgrade(.*)'],
 }

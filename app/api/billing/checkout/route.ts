@@ -1,12 +1,12 @@
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-04-22.dahlia',
 })
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const {
@@ -17,6 +17,20 @@ export async function POST() {
     if (authError || !user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    let priceId = process.env.STRIPE_PRICE_ID!
+    try {
+      const body = await request.json() as { priceId?: string }
+      if (body.priceId) priceId = body.priceId
+    } catch {
+      // no body — use default price
+    }
+
+    const agencyPriceIds = [
+      process.env.STRIPE_PRICE_ID_AGENCY_MONTHLY,
+      process.env.STRIPE_PRICE_ID_AGENCY_ANNUAL,
+    ].filter(Boolean)
+    const planType = agencyPriceIds.includes(priceId) ? 'agency' : 'solo'
 
     const { data: profile } = await supabase
       .from('users')
@@ -39,24 +53,27 @@ export async function POST() {
         .eq('id', user.id)
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const host = request.headers.get('host') ?? 'localhost:3000'
+    const proto = host.startsWith('localhost') ? 'http' : 'https'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `${proto}://${host}`
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: priceId,
           quantity: 1,
         },
       ],
       success_url: `${baseUrl}/dashboard?upgraded=1`,
-      cancel_url: `${baseUrl}/settings`,
+      cancel_url: `${baseUrl}/upgrade`,
       customer_update: {
         address: 'auto',
       },
+      metadata: { supabase_user_id: user.id, plan_type: planType },
       subscription_data: {
-        metadata: { supabase_user_id: user.id },
+        metadata: { supabase_user_id: user.id, plan_type: planType },
       },
     })
 

@@ -51,7 +51,7 @@ const navItems = [
   },
 ]
 
-export default function Sidebar({ userEmail }: { userEmail: string }) {
+export default function Sidebar({ userEmail, plan }: { userEmail: string; plan: string }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -99,10 +99,34 @@ export default function Sidebar({ userEmail }: { userEmail: string }) {
         })}
       </nav>
 
+      {/* Upgrade prompt for trial users */}
+      {plan === 'trial' && (
+        <div className="px-3 pb-3">
+          <Link
+            href="/upgrade"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
+              pathname === '/upgrade'
+                ? 'bg-white/[0.08] text-white font-medium'
+                : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06] border border-white/[0.08]'
+            }`}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
+              <path d="M7 1L9 5H13L10 8L11 12L7 10L3 12L4 8L1 5H5L7 1Z" stroke="currentColor" strokeOpacity="0.6" strokeLinejoin="round" />
+            </svg>
+            <span className="flex-1">Upgrade</span>
+            <span className="text-[9px] text-white/30 font-medium">from $19</span>
+          </Link>
+        </div>
+      )}
+
       {/* User section */}
       <div className="px-3 pb-4 border-t border-white/[0.05] pt-4">
         <div className="px-3 py-1.5 mb-1">
           <p className="text-white/25 text-xs truncate leading-relaxed">{userEmail}</p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className={`w-1 h-1 rounded-full ${plan === 'trial' ? 'bg-white/25 animate-pulse' : 'bg-white/50'}`} />
+            <span className="text-white/20 text-[10px] capitalize">{plan === 'trial' ? 'Free trial' : plan}</span>
+          </div>
         </div>
         <button
           onClick={handleSignOut}

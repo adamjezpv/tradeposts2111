@@ -16,9 +16,17 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  const { data: profile } = await supabase
+    .from('users')
+    .select('plan')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const plan = profile?.plan ?? 'trial'
+
   return (
     <div className="flex h-screen bg-black overflow-hidden">
-      <Sidebar userEmail={user.email ?? ''} />
+      <Sidebar userEmail={user.email ?? ''} plan={plan} />
       <main className="flex-1 overflow-y-auto">
         {children}
       </main>

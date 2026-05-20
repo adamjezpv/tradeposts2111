@@ -15,6 +15,11 @@ function createAdminClient() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('[webhook] STRIPE_WEBHOOK_SECRET is not set')
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
+  }
+
   const rawBody = await request.text()
   const signature = request.headers.get('stripe-signature')
 
@@ -35,19 +40,43 @@ export async function POST(request: NextRequest) {
 
   const supabase = createAdminClient()
 
-  if (event.type === 'checkout.session.completed' || event.type === 'invoice.paid') {
-    const obj = event.data.object as { customer_email?: string | null }
-    const customerEmail = obj.customer_email
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session
+    const planType = (session.metadata?.plan_type as string) ?? 'solo'
+    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
 
-    if (customerEmail) {
+    let dbError = null
+    if (customerId) {
       const { error } = await supabase
         .from('users')
-        .update({ subscription_status: 'active', plan: 'premium' })
-        .eq('email', customerEmail)
+        .update({ subscription_status: 'active', plan: planType })
+        .eq('stripe_customer_id', customerId)
+      dbError = error
+    } else if (session.customer_email) {
+      const { error } = await supabase
+        .from('users')
+        .update({ subscription_status: 'active', plan: planType })
+        .eq('email', session.customer_email)
+      dbError = error
+    }
 
+    if (dbError) {
+      console.error('[webhook] checkout.session.completed db error:', dbError)
+      return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 })
+    }
+  }
+
+  if (event.type === 'invoice.paid') {
+    const invoice = event.data.object as Stripe.Invoice
+    const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+
+    if (customerId) {
+      const { error } = await supabase
+        .from('users')
+        .update({ subscription_status: 'active' })
+        .eq('stripe_customer_id', customerId)
       if (error) {
-        console.error('Supabase update error:', error)
-        return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 })
+        console.error('[webhook] invoice.paid db error:', error)
       }
     }
   }

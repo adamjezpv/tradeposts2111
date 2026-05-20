@@ -1,5 +1,5 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { UpgradeButton } from '../_components/UpgradeButton'
 
 export const runtime = 'edge'
 
@@ -55,12 +55,17 @@ export default async function SettingsPage() {
           <div className="glass-bright rounded-2xl p-6 mb-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.04),transparent_60%)] pointer-events-none" />
             <div className="relative z-10">
-              <p className="text-white/25 text-[10px] uppercase tracking-widest mb-4">Upgrade</p>
-              <h3 className="text-white text-sm font-semibold mb-2">Premium Plan — $49/month</h3>
+              <p className="text-white/25 text-[10px] uppercase tracking-widest mb-4">Subscription</p>
+              <h3 className="text-white text-sm font-semibold mb-2">Ready to go live?</h3>
               <p className="text-white/30 text-xs leading-relaxed mb-5">
-                Unlock automatic publishing, full post history, and priority support.
+                Choose a plan that fits your business — from a single location to a full agency setup.
               </p>
-              <UpgradeButton />
+              <Link
+                href="/upgrade"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-xs font-semibold hover:bg-white/90 transition-all active:scale-[0.98]"
+              >
+                View plans →
+              </Link>
             </div>
           </div>
         )}

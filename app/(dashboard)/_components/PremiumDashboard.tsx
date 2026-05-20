@@ -1,12 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
+import confetti from 'canvas-confetti'
+import CalendarPostModal, { parsePostContent } from './CalendarPostModal'
 
 type Post = {
   id: string
   content: string
   scheduled_at: string
   status: string
+  error_message: string | null
   locations: { business_name: string }[] | null
 }
 
@@ -23,6 +28,22 @@ function isAgencyPlan(plan: string) {
   return plan === 'agency'
 }
 
+function getPreviewText(content: string, wordLimit = 22): string {
+  const parsed = parsePostContent(content)
+  const text = parsed.google || parsed.facebook || parsed.linkedin || parsed.reddit || content
+  const words = text.split(' ')
+  return words.slice(0, wordLimit).join(' ') + (words.length > wordLimit ? '…' : '')
+}
+
+function getStatusDotColor(status: string): string {
+  switch (status) {
+    case 'published': return 'bg-green-400'
+    case 'scheduled': return 'bg-orange-400'
+    case 'failed': return 'bg-red-500'
+    default: return 'bg-white/45'
+  }
+}
+
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
@@ -37,8 +58,25 @@ export default function PremiumDashboard({
   industry,
   firstLocationName,
 }: Props) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const isAgency = isAgencyPlan(plan)
   const [view, setView] = useState<'calendar' | 'queue'>('calendar')
+
+  useEffect(() => {
+    if (searchParams.get('upgraded') === '1') {
+      router.replace('/dashboard')
+
+      const end = Date.now() + 3000
+      const colors = ['#ffffff', '#d4d4d4', '#a3a3a3']
+      const frame = () => {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors })
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors })
+        if (Date.now() < end) requestAnimationFrame(frame)
+      }
+      requestAnimationFrame(frame)
+    }
+  }, [router, searchParams])
   const today = new Date()
   const [calMonth, setCalMonth] = useState(today.getMonth())
   const [calYear, setCalYear] = useState(today.getFullYear())
@@ -68,12 +106,37 @@ export default function PremiumDashboard({
     else setCalMonth(m => m + 1)
   }
 
+  const containerVariants: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+  }
+
+  const childVariants: Variants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' as const } },
+  }
+
+  const metricsVariants: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+  }
+
+  const metricCardVariants: Variants = {
+    hidden: { opacity: 0, y: 16, scale: 0.96 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: 'easeOut' as const } },
+  }
+
   return (
-    <div className="min-h-full p-8">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="min-h-full p-8"
+    >
       <div className="max-w-5xl">
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <motion.div variants={childVariants} className="flex items-start justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gradient tracking-tight mb-1">
               Command Center
@@ -81,7 +144,7 @@ export default function PremiumDashboard({
             <p className="text-white/30 text-sm">Welcome back, {firstName}. Here&apos;s your publishing overview.</p>
           </div>
           <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2.5 flex-shrink-0">
-            <span className={`w-1.5 h-1.5 rounded-full ${isAgency ? 'bg-white/80' : 'bg-white/50'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${isAgency ? 'bg-white/80 animate-pulse' : 'bg-white/50'}`} />
             <span className="text-white/50 text-xs font-medium capitalize">
               {plan === 'agency' ? 'Agency' : plan === 'solo' ? 'Solo' : plan}
             </span>
@@ -91,17 +154,37 @@ export default function PremiumDashboard({
               </span>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Metrics */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="glass-bright rounded-2xl p-5">
+        <motion.div
+          variants={metricsVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-3 gap-4 mb-8"
+        >
+          <motion.div
+            variants={metricCardVariants}
+            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+            className="glass-bright rounded-2xl p-5"
+          >
             <p className="text-white/25 text-[10px] uppercase tracking-widest mb-3">Scheduled Posts</p>
-            <p className="text-white text-3xl font-bold tracking-tight">{posts.length}</p>
+            <motion.p
+              className="text-white text-3xl font-bold tracking-tight"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: 'backOut', delay: 0.3 }}
+            >
+              {posts.length}
+            </motion.p>
             <p className="text-white/25 text-xs mt-1.5">pending publication</p>
-          </div>
+          </motion.div>
 
-          <div className="glass-bright rounded-2xl p-5">
+          <motion.div
+            variants={metricCardVariants}
+            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+            className="glass-bright rounded-2xl p-5"
+          >
             <p className="text-white/25 text-[10px] uppercase tracking-widest mb-3">Active Industry</p>
             <p className="text-white text-sm font-semibold leading-snug">
               {industry ?? '—'}
@@ -112,18 +195,25 @@ export default function PremiumDashboard({
             {!firstLocationName && (
               <p className="text-white/20 text-xs mt-1.5">No location connected</p>
             )}
-          </div>
+          </motion.div>
 
-          <div className="glass-bright rounded-2xl p-5">
+          <motion.div
+            variants={metricCardVariants}
+            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+            className="glass-bright rounded-2xl p-5"
+          >
             <p className="text-white/25 text-[10px] uppercase tracking-widest mb-3">Next Publication</p>
-            <p className="text-white text-sm font-semibold leading-snug">{nextPostLabel}</p>
+            <p className="text-white text-sm font-semibold leading-snug" suppressHydrationWarning>{nextPostLabel}</p>
             <p className="text-white/25 text-xs mt-1.5">via scheduled cron</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        {/* Agency gate — shown to solo users managing multiple locations */}
+        {/* Agency gate */}
         {!isAgency && locationCount > 1 && (
-          <div className="glass rounded-2xl px-5 py-4 mb-5 flex items-center justify-between gap-4">
+          <motion.div
+            variants={childVariants}
+            className="glass rounded-2xl px-5 py-4 mb-5 flex items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-white/30 flex-shrink-0" />
               <p className="text-white/40 text-xs leading-relaxed">
@@ -136,69 +226,109 @@ export default function PremiumDashboard({
             >
               Upgrade
             </a>
-          </div>
+          </motion.div>
         )}
 
         {/* View Switcher + Nav */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-1 glass rounded-xl p-1">
+        <motion.div variants={childVariants} className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-1 glass rounded-xl p-1 relative">
             <button
               onClick={() => setView('calendar')}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
-                view === 'calendar'
-                  ? 'bg-white/[0.1] text-white'
-                  : 'text-white/35 hover:text-white/55'
+              className={`relative px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 z-10 ${
+                view === 'calendar' ? 'text-white' : 'text-white/35 hover:text-white/55'
               }`}
             >
+              {view === 'calendar' && (
+                <motion.span
+                  layoutId="view-indicator"
+                  className="absolute inset-0 bg-white/[0.1] rounded-lg -z-10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                />
+              )}
               Calendar View
             </button>
             <button
               onClick={() => setView('queue')}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
-                view === 'queue'
-                  ? 'bg-white/[0.1] text-white'
-                  : 'text-white/35 hover:text-white/55'
+              className={`relative px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 z-10 ${
+                view === 'queue' ? 'text-white' : 'text-white/35 hover:text-white/55'
               }`}
             >
+              {view === 'queue' && (
+                <motion.span
+                  layoutId="view-indicator"
+                  className="absolute inset-0 bg-white/[0.1] rounded-lg -z-10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                />
+              )}
               Queue View
             </button>
           </div>
 
-          {view === 'calendar' && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={goToPrev}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all text-sm"
+          <AnimatePresence>
+            {view === 'calendar' && (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-2"
               >
-                ←
-              </button>
-              <span className="text-white/50 text-sm font-medium w-36 text-center">
-                {MONTH_NAMES[calMonth]} {calYear}
-              </span>
-              <button
-                onClick={goToNext}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all text-sm"
-              >
-                →
-              </button>
-            </div>
-          )}
-        </div>
+                <motion.button
+                  onClick={goToPrev}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-colors text-sm"
+                >
+                  ←
+                </motion.button>
+                <span className="text-white/50 text-sm font-medium w-36 text-center">
+                  {MONTH_NAMES[calMonth]} {calYear}
+                </span>
+                <motion.button
+                  onClick={goToNext}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-colors text-sm"
+                >
+                  →
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
-        {view === 'calendar' ? (
-          <CalendarView
-            calMonth={calMonth}
-            calYear={calYear}
-            today={today}
-            postsByDate={postsByDate}
-            isAgency={isAgency}
-          />
-        ) : (
-          <QueueView posts={posts} isAgency={isAgency} />
-        )}
+        <AnimatePresence mode="wait">
+          {view === 'calendar' ? (
+            <motion.div
+              key="calendar"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              <CalendarView
+                calMonth={calMonth}
+                calYear={calYear}
+                today={today}
+                postsByDate={postsByDate}
+                isAgency={isAgency}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="queue"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              <QueueView posts={posts} isAgency={isAgency} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -216,6 +346,7 @@ function CalendarView({
   isAgency: boolean
 }) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const [editPost, setEditPost] = useState<Post | null>(null)
 
   const firstDow = new Date(calYear, calMonth, 1).getDay()
   const startOffset = firstDow === 0 ? 6 : firstDow - 1
@@ -228,6 +359,15 @@ function CalendarView({
   })
 
   const selectedPosts = selectedKey ? (postsByDate[selectedKey] ?? []) : []
+
+  function handleDayClick(key: string, dayPosts: Post[]) {
+    if (dayPosts.length === 1) {
+      setEditPost(dayPosts[0])
+      setSelectedKey(null)
+      return
+    }
+    setSelectedKey(prev => prev === key ? null : key)
+  }
 
   return (
     <div>
@@ -255,26 +395,29 @@ function CalendarView({
             return (
               <button
                 key={idx}
-                onClick={() => setSelectedKey(isSelected ? null : key)}
+                onClick={() => handleDayClick(key, dayPosts)}
+                suppressHydrationWarning
                 className={`h-14 rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-150 ${
                   isSelected
                     ? 'bg-white/[0.12] ring-1 ring-white/20'
                     : isToday
                     ? 'bg-white/[0.07]'
+                    : hasPosts
+                    ? 'hover:bg-white/[0.06] cursor-pointer'
                     : 'hover:bg-white/[0.04]'
                 }`}
               >
-                <span className={`text-xs font-medium ${
+                <span suppressHydrationWarning className={`text-xs font-medium ${
                   isToday ? 'text-white' : isSelected ? 'text-white/80' : 'text-white/40'
                 }`}>
                   {day}
                 </span>
                 {hasPosts && (
                   <div className="flex items-center gap-0.5">
-                    {dayPosts.slice(0, 3).map((_, i) => (
+                    {dayPosts.slice(0, 3).map((post, i) => (
                       <span
                         key={i}
-                        className="w-1 h-1 rounded-full bg-white/45"
+                        className={`w-1 h-1 rounded-full ${getStatusDotColor(post.status)}`}
                       />
                     ))}
                     {dayPosts.length > 3 && (
@@ -288,7 +431,7 @@ function CalendarView({
         </div>
       </div>
 
-      {/* Selected day detail */}
+      {/* Selected day detail (shown for days with multiple posts) */}
       {selectedKey && (
         <div className="mt-4">
           <p className="text-white/30 text-xs mb-3">
@@ -298,27 +441,38 @@ function CalendarView({
               day: 'numeric',
             })}
             {selectedPosts.length > 0
-              ? ` — ${selectedPosts.length} post${selectedPosts.length !== 1 ? 's' : ''}`
+              ? ` — ${selectedPosts.length} post${selectedPosts.length !== 1 ? 's' : ''} — click to edit`
               : ' — no posts scheduled'}
           </p>
           {selectedPosts.length > 0 ? (
             <div className="space-y-2">
               {selectedPosts.map(post => {
-                const words = post.content.split(' ')
-                const preview = words.slice(0, 22).join(' ') + (words.length > 22 ? '...' : '')
+                const preview = getPreviewText(post.content)
                 return (
-                  <div key={post.id} className="glass rounded-xl p-4">
-                    <p className="text-white/55 text-xs leading-relaxed">{preview}</p>
-                    {post.locations?.[0]?.business_name && (
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.05]">
-                        <p className="text-white/20 text-[10px]">
-                          {post.locations[0].business_name}
-                        </p>
-                        {!isAgency && (
-                          <a href="/upgrade" className="text-[9px] text-white/20 hover:text-white/40 transition-colors">
-                            Agency →
-                          </a>
+                  <div
+                    key={post.id}
+                    className="glass rounded-xl p-4 cursor-pointer hover:bg-white/[0.06] transition-all duration-150 group"
+                    onClick={() => setEditPost(post)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className={`w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0 ${getStatusDotColor(post.status)}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/55 text-xs leading-relaxed">{preview}</p>
+                        {post.locations?.[0]?.business_name && (
+                          <p className="text-white/20 text-[10px] mt-1.5">
+                            {post.locations[0].business_name}
+                          </p>
                         )}
+                      </div>
+                      <svg className="w-3 h-3 text-white/20 group-hover:text-white/40 transition-colors flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </div>
+                    {!isAgency && (
+                      <div className="mt-2 pt-2 border-t border-white/[0.05] flex justify-end">
+                        <a href="/upgrade" className="text-[9px] text-white/20 hover:text-white/40 transition-colors" onClick={e => e.stopPropagation()}>
+                          Agency →
+                        </a>
                       </div>
                     )}
                   </div>
@@ -332,6 +486,17 @@ function CalendarView({
           )}
         </div>
       )}
+
+      {/* Edit modal */}
+      <AnimatePresence>
+        {editPost && (
+          <CalendarPostModal
+            key={editPost.id}
+            post={editPost}
+            onClose={() => setEditPost(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -356,7 +521,6 @@ function QueueView({ posts, isAgency }: { posts: Post[]; isAgency: boolean }) {
     )
   }
 
-  // Group by date for visual separation
   const grouped: { dateLabel: string; posts: Post[] }[] = []
   let lastLabel = ''
   for (const post of posts) {
@@ -369,36 +533,49 @@ function QueueView({ posts, isAgency }: { posts: Post[]; isAgency: boolean }) {
     grouped[grouped.length - 1].posts.push(post)
   }
 
-  // Collect unique locations across all queued posts
   const uniqueLocations = Array.from(
     new Set(posts.flatMap(p => p.locations?.map(l => l.business_name) ?? []))
   )
 
   return (
-    <div className="space-y-6">
-      {/* Agency: show all-location summary bar; Solo: show upgrade nudge if multi-location */}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+      className="space-y-6"
+    >
       {isAgency && uniqueLocations.length > 1 && (
-        <div className="glass rounded-xl px-4 py-3 flex items-center gap-3">
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-xl px-4 py-3 flex items-center gap-3"
+        >
           <span className="w-1 h-1 rounded-full bg-white/50 flex-shrink-0" />
           <p className="text-white/40 text-xs">
             Showing queue for <span className="text-white/60 font-medium">{uniqueLocations.length} locations</span>
           </p>
-        </div>
+        </motion.div>
       )}
-      {grouped.map(({ dateLabel, posts: dayPosts }) => (
-        <div key={dateLabel}>
+      {grouped.map(({ dateLabel, posts: dayPosts }, gi) => (
+        <motion.div
+          key={dateLabel}
+          variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' as const } } } satisfies Variants}
+        >
           <p className="text-white/25 text-[10px] uppercase tracking-widest mb-2.5">{dateLabel}</p>
           <div className="space-y-2">
-            {dayPosts.map(post => {
+            {dayPosts.map((post, pi) => {
               const d = new Date(post.scheduled_at)
               const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-              const words = post.content.split(' ')
-              const preview = words.slice(0, 20).join(' ') + (words.length > 20 ? '...' : '')
+              const preview = getPreviewText(post.content, 20)
 
               return (
-                <div
+                <motion.div
                   key={post.id}
-                  className="glass rounded-xl p-4 flex items-start gap-4 hover:bg-white/[0.05] transition-all duration-150 group"
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.22, ease: 'easeOut', delay: gi * 0.08 + pi * 0.04 }}
+                  whileHover={{ x: 2, transition: { duration: 0.12 } }}
+                  className="glass rounded-xl p-4 flex items-start gap-4 hover:bg-white/[0.05] transition-colors duration-150 group"
                 >
                   <div className="flex-shrink-0 pt-0.5">
                     <span className="text-white/30 text-xs font-medium tabular-nums">{timeStr}</span>
@@ -412,15 +589,18 @@ function QueueView({ posts, isAgency }: { posts: Post[]; isAgency: boolean }) {
                       </p>
                     )}
                   </div>
-                  <span className="text-[9px] text-white/20 px-1.5 py-0.5 rounded-full border border-white/[0.08] flex-shrink-0 self-start">
-                    {post.status}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 self-start">
+                    <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(post.status)}`} />
+                    <span className="text-[9px] text-white/20 px-1.5 py-0.5 rounded-full border border-white/[0.08]">
+                      {post.status}
+                    </span>
+                  </div>
+                </motion.div>
               )
             })}
           </div>
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

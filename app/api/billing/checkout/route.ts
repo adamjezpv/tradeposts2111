@@ -6,6 +6,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-04-22.dahlia',
 })
 
+const PRICE_MAP: Record<string, Record<string, string | undefined>> = {
+  solo: {
+    monthly: process.env.STRIPE_PRICE_SOLO_MONTHLY_ID,
+    annual: process.env.STRIPE_PRICE_SOLO_ANNUAL_ID,
+  },
+  agency: {
+    monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY_ID,
+    annual: process.env.STRIPE_PRICE_AGENCY_ANNUAL_ID,
+  },
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -18,19 +29,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    let priceId = process.env.STRIPE_PRICE_ID!
-    try {
-      const body = await request.json() as { priceId?: string }
-      if (body.priceId) priceId = body.priceId
-    } catch {
-      // no body — use default price
+    const body = await request.json().catch(() => ({})) as { plan?: string; billing?: string }
+    const planType = (body.plan === 'agency' ? 'agency' : 'solo') as 'solo' | 'agency'
+    const billing = body.billing === 'annual' ? 'annual' : 'monthly'
+
+    const priceId = PRICE_MAP[planType][billing]
+    console.log(`[checkout] plan=${planType} billing=${billing} priceId=${priceId}`)
+
+    if (!priceId) {
+      const envKey = planType === 'agency'
+        ? (billing === 'annual' ? 'STRIPE_PRICE_AGENCY_ANNUAL_ID' : 'STRIPE_PRICE_AGENCY_MONTHLY_ID')
+        : (billing === 'annual' ? 'STRIPE_PRICE_SOLO_ANNUAL_ID' : 'STRIPE_PRICE_SOLO_MONTHLY_ID')
+      return NextResponse.json(
+        { error: `Stripe price not configured: env var ${envKey} is missing or empty` },
+        { status: 500 }
+      )
     }
 
-    const agencyPriceIds = [
-      process.env.STRIPE_PRICE_ID_AGENCY_MONTHLY,
-      process.env.STRIPE_PRICE_ID_AGENCY_ANNUAL,
-    ].filter(Boolean)
-    const planType = agencyPriceIds.includes(priceId) ? 'agency' : 'solo'
+    if (!priceId.startsWith('price_') || priceId.length < 20) {
+      return NextResponse.json(
+        { error: `Stripe price ID looks like a placeholder: "${priceId}". Set the real Stripe price ID in your environment variables.` },
+        { status: 500 }
+      )
+    }
 
     const { data: profile } = await supabase
       .from('users')
@@ -60,6 +81,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: customerId,
+      client_reference_id: user.id,
       line_items: [
         {
           price: priceId,

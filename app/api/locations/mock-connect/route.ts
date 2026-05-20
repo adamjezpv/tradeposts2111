@@ -39,6 +39,26 @@ export async function GET(request: NextRequest) {
     { onConflict: 'id' }
   )
 
+  // Enforce plan-based location limits
+  const { data: profile } = await supabase
+    .from('users')
+    .select('plan')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const plan = profile?.plan ?? 'trial'
+  const locationLimit = plan === 'agency' ? 10 : 1
+
+  const { count } = await supabase
+    .from('locations')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  if ((count ?? 0) >= locationLimit) {
+    const upgradeHint = plan === 'agency' ? 'agency_limit' : 'solo_limit'
+    return NextResponse.redirect(`${origin}/locations?error=${upgradeHint}`)
+  }
+
   // Only insert if this mock location doesn't already exist
   const { data: existing } = await supabase
     .from('locations')

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { motion, type Variants } from 'framer-motion'
 
 const navItems = [
   {
@@ -65,43 +66,81 @@ export default function Sidebar({ userEmail, plan }: { userEmail: string; plan: 
     router.refresh()
   }
 
+  const navVariants: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } },
+  }
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.22, ease: 'easeOut' as const } },
+  }
+
   return (
-    <aside className="w-[220px] flex-shrink-0 h-full flex flex-col border-r border-white/[0.07] bg-black">
+    <motion.aside
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="w-[220px] flex-shrink-0 h-full flex flex-col border-r border-white/[0.07] bg-black"
+    >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-5 py-5 border-b border-white/[0.05]">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.3 }}
+        className="flex items-center gap-2 px-5 py-5 border-b border-white/[0.05]"
+      >
         <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center">
           <div className="w-3 h-3 rounded-sm bg-black" />
         </div>
         <span className="font-semibold text-white tracking-tight text-sm">TradePosts</span>
         <span className="text-white/25 text-xs">.io</span>
-      </div>
+      </motion.div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <motion.nav
+        variants={navVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex-1 px-3 py-4 space-y-0.5"
+      >
         {navItems.map((item) => {
           const isActive = pathname === item.href
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
-                isActive
-                  ? 'bg-white/[0.08] text-white font-medium'
-                  : 'text-white/35 hover:text-white/65 hover:bg-white/[0.04]'
-              }`}
-            >
-              <span className={isActive ? 'text-white/70' : 'text-white/30'}>
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
+            <motion.div key={item.href} variants={itemVariants}>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 relative overflow-hidden group ${
+                  isActive
+                    ? 'bg-white/[0.08] text-white font-medium'
+                    : 'text-white/35 hover:text-white/65 hover:bg-white/[0.04]'
+                }`}
+              >
+                <span className={`transition-transform duration-150 group-hover:scale-110 ${isActive ? 'text-white/70' : 'text-white/30'}`}>
+                  {item.icon}
+                </span>
+                {item.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="sidebar-active"
+                    className="absolute inset-0 bg-white/[0.08] rounded-lg -z-10"
+                    transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                  />
+                )}
+              </Link>
+            </motion.div>
           )
         })}
-      </nav>
+      </motion.nav>
 
       {/* Upgrade prompt for trial users */}
       {plan === 'trial' && (
-        <div className="px-3 pb-3">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45, duration: 0.25 }}
+          className="px-3 pb-3"
+        >
           <Link
             href="/upgrade"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
@@ -116,11 +155,16 @@ export default function Sidebar({ userEmail, plan }: { userEmail: string; plan: 
             <span className="flex-1">Upgrade</span>
             <span className="text-[9px] text-white/30 font-medium">from $19</span>
           </Link>
-        </div>
+        </motion.div>
       )}
 
       {/* User section */}
-      <div className="px-3 pb-4 border-t border-white/[0.05] pt-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.3 }}
+        className="px-3 pb-4 border-t border-white/[0.05] pt-4"
+      >
         <div className="px-3 py-1.5 mb-1">
           <p className="text-white/25 text-xs truncate leading-relaxed">{userEmail}</p>
           <div className="flex items-center gap-1.5 mt-1">
@@ -128,8 +172,10 @@ export default function Sidebar({ userEmail, plan }: { userEmail: string; plan: 
             <span className="text-white/20 text-[10px] capitalize">{plan === 'trial' ? 'Free trial' : plan}</span>
           </div>
         </div>
-        <button
+        <motion.button
           onClick={handleSignOut}
+          whileHover={{ x: 2 }}
+          whileTap={{ scale: 0.97 }}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/25 hover:text-white/55 hover:bg-white/[0.04] transition-all duration-150 text-left"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -138,8 +184,8 @@ export default function Sidebar({ userEmail, plan }: { userEmail: string; plan: 
             <line x1="13" y1="7" x2="5" y2="7" stroke="currentColor" strokeOpacity="0.5" strokeLinecap="round" />
           </svg>
           Sign out
-        </button>
-      </div>
-    </aside>
+        </motion.button>
+      </motion.div>
+    </motion.aside>
   )
 }

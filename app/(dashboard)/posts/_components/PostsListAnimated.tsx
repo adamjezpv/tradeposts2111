@@ -57,7 +57,16 @@ export default function PostsListAnimated({ posts }: { posts: Post[] }) {
 
         const businessName = post.locations?.[0]?.business_name
         const status = STATUS_STYLES[post.status] ?? STATUS_STYLES.pending
-        const paragraphs = post.content.split(/\n+/).filter(Boolean)
+
+        // Content is stored as JSON {google, facebook, linkedin, reddit} — show Google version
+        let displayContent = post.content
+        try {
+          const parsed = JSON.parse(post.content) as Record<string, string>
+          displayContent = parsed.google ?? parsed.facebook ?? parsed.linkedin ?? parsed.reddit ?? post.content
+        } catch {
+          // plain text fallback
+        }
+        const paragraphs = displayContent.split(/\n+/).filter(Boolean)
 
         return (
           <motion.article
@@ -103,7 +112,7 @@ export default function PostsListAnimated({ posts }: { posts: Post[] }) {
               ) : (
                 <span />
               )}
-              <PostActions postId={post.id} content={post.content} scheduledAt={post.scheduled_at} />
+              <PostActions postId={post.id} content={post.content} scheduledAt={post.scheduled_at} status={post.status} />
             </div>
           </motion.article>
         )

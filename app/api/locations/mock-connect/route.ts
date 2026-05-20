@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/login`)
   }
 
-  // Ensure a users row exists (created on first OAuth sign-in in production)
+  // Ensure a users row exists — use ignoreDuplicates so we NEVER overwrite an existing user's plan
   await supabase.from('users').upsert(
     {
       id: user.id,
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       plan: 'trial',
       trial_ends: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
     },
-    { onConflict: 'id' }
+    { onConflict: 'id', ignoreDuplicates: true }
   )
 
   // Enforce plan-based location limits
@@ -59,26 +59,32 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/locations?error=${upgradeHint}`)
   }
 
-  // Only insert if this mock location doesn't already exist
-  const { data: existing } = await supabase
-    .from('locations')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('gbp_location_id', 'mock_123')
-    .maybeSingle()
+  // Create a unique mock location using a timestamp-based ID
+  const mockId = `mock_${Date.now()}`
+  const MOCK_BUSINESSES = [
+    { name: 'Tomek Plumbing Services LLC', type: 'Plumber', services: ['pipe repair', 'drain cleaning', 'water heater installation'] },
+    { name: 'Tomek Electrical LLC', type: 'Electrician', services: ['wiring', 'panel upgrade', 'outlet installation'] },
+    { name: 'Tomek HVAC Services', type: 'HVAC Technician', services: ['AC repair', 'heating', 'duct cleaning'] },
+    { name: 'Tomek Roofing Co', type: 'Roofer', services: ['roof repair', 'gutter cleaning', 'inspections'] },
+    { name: 'Tomek Landscaping', type: 'Landscaper', services: ['lawn care', 'planting', 'irrigation'] },
+  ]
+  const bizIndex = (count ?? 0) % MOCK_BUSINESSES.length
+  const biz = MOCK_BUSINESSES[bizIndex]
 
-  if (!existing) {
-    await supabase.from('locations').insert({
-      user_id: user.id,
-      gbp_account_id: 'mock_account_123',
-      gbp_location_id: 'mock_123',
-      business_name: 'Tomek Plumbing Services LLC',
-      business_type: 'Plumber',
-      services: ['pipe repair', 'drain cleaning', 'water heater installation'],
-      tone: 'professional',
-      active: true,
-    })
-  }
+  await supabase.from('locations').insert({
+    user_id: user.id,
+    gbp_account_id: 'mock_account_123',
+    gbp_location_id: mockId,
+    business_name: biz.name,
+    business_type: biz.type,
+    services: biz.services,
+    tone: 'professional',
+    active: true,
+  })
 
-  return redirectToDashboard
+  const locationsRedirect = NextResponse.redirect(`${origin}/locations`)
+  redirectToDashboard.cookies.getAll().forEach(({ name, value, ...rest }) => {
+    locationsRedirect.cookies.set(name, value, rest as Parameters<typeof locationsRedirect.cookies.set>[2])
+  })
+  return locationsRedirect
 }

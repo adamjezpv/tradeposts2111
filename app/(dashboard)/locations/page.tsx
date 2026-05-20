@@ -5,7 +5,19 @@ import GeneratePostsButton from '../_components/GeneratePostsButton'
 import LocationScheduleForm from './_components/LocationScheduleForm'
 import { LocationCardWrapper, PageHeader, EmptyStateAnimated } from './_components/LocationsAnimated'
 
-export default async function LocationsPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  solo_limit: 'You\'ve reached the 1-location limit on your plan. Upgrade to Agency for up to 10 locations.',
+  agency_limit: 'You\'ve reached the 10-location limit on the Agency plan.',
+  oauth_failed: 'Google connection failed. Please try again.',
+  exchange_failed: 'Google authentication failed. Please try again.',
+  missing_code: 'Google login returned no code. Please try again.',
+}
+
+export default async function LocationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,6 +37,8 @@ export default async function LocationsPage() {
   const plan = profileResult.data?.plan ?? 'trial'
   const locationLimit = plan === 'agency' ? 10 : 1
   const canAddMore = (locations?.length ?? 0) < locationLimit
+  const params = await searchParams
+  const errorMessage = params.error ? (ERROR_MESSAGES[params.error] ?? `Error: ${params.error}`) : null
 
   return (
     <div className="min-h-full p-8">
@@ -33,6 +47,21 @@ export default async function LocationsPage() {
           title="Locations"
           subtitle="Manage your Google Business Profile connections and posting schedule."
         />
+
+        {errorMessage && (
+          <div className="mb-6 glass rounded-xl px-5 py-4 flex items-center gap-3 border border-red-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+            <p className="text-red-400/80 text-sm">{errorMessage}</p>
+            {errorMessage.includes('Upgrade') && (
+              <a
+                href="/upgrade"
+                className="ml-auto flex-shrink-0 text-[11px] font-semibold text-white/60 hover:text-white border border-white/[0.1] hover:border-white/25 px-3 py-1.5 rounded-lg transition-all"
+              >
+                Upgrade →
+              </a>
+            )}
+          </div>
+        )}
 
         {locations && locations.length > 0 ? (
           <div className="space-y-3">
@@ -71,7 +100,7 @@ export default async function LocationsPage() {
                   <>
                     <p className="text-white/25 text-xs mb-4">Want to add another location?</p>
                     <a
-                      href="/api/auth/google"
+                      href="/api/locations/mock-connect"
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 transition-all active:scale-[0.98]"
                     >
                       Connect Google Business →
@@ -82,7 +111,9 @@ export default async function LocationsPage() {
                     <p className="text-white/25 text-xs mb-1">
                       {plan === 'agency'
                         ? `Agency plan limit reached (${locationLimit} locations).`
-                        : 'Solo plan allows 1 location.'}
+                        : plan === 'solo'
+                        ? 'Solo plan allows 1 location.'
+                        : 'Free trial allows 1 location.'}
                     </p>
                     {plan !== 'agency' && (
                       <p className="text-white/20 text-xs mb-4">Upgrade to Agency to manage up to 10 locations.</p>

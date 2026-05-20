@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { SettingsContainer, SettingsCard, SettingsHeader } from './_components/SettingsAnimated'
+import ManageBillingButton from './_components/ManageBillingButton'
+import RestorePlanButton from './_components/RestorePlanButton'
 
 export const runtime = 'edge'
 
@@ -15,6 +17,7 @@ export default async function SettingsPage() {
     .maybeSingle()
 
   const plan = profile?.plan ?? 'trial'
+  const hasBilling = plan === 'solo' || plan === 'agency'
 
   return (
     <div className="min-h-full p-8">
@@ -49,7 +52,18 @@ export default async function SettingsPage() {
             </div>
           </SettingsCard>
 
-          {/* Upgrade card */}
+          {/* Billing management for paying users */}
+          {hasBilling && (
+            <SettingsCard className="glass-bright rounded-2xl p-6">
+              <p className="text-white/25 text-[10px] uppercase tracking-widest mb-4">Billing</p>
+              <p className="text-white/30 text-xs leading-relaxed mb-5">
+                Manage your subscription, update payment methods, download invoices, or cancel your plan.
+              </p>
+              <ManageBillingButton />
+            </SettingsCard>
+          )}
+
+          {/* Upgrade card for trial users */}
           {plan === 'trial' && (
             <SettingsCard className="glass-bright rounded-2xl p-6 relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.04),transparent_60%)] pointer-events-none" />
@@ -65,6 +79,7 @@ export default async function SettingsPage() {
                 >
                   View plans →
                 </Link>
+                <RestorePlanButton />
               </div>
             </SettingsCard>
           )}

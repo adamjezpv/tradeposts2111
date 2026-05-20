@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import TrialExpiredBlock from '../_components/TrialExpiredBlock'
 import TrialDashboard from '../_components/TrialDashboard'
 import PremiumDashboard from '../_components/PremiumDashboard'
+import VerifyPaymentBanner from '../_components/VerifyPaymentBanner'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -15,7 +16,11 @@ type PostWithLocation = {
   locations: { business_name: string }[] | null
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ verify?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -44,6 +49,8 @@ export default async function DashboardPage() {
   const firstLocation = locations[0] ?? null
 
   const plan = profile?.plan ?? 'trial'
+  const params = await searchParams
+  const showVerifyBanner = plan === 'trial' && params.verify === '1'
 
   const firstName =
     user?.user_metadata?.full_name?.split(' ')[0] ??
@@ -71,18 +78,21 @@ export default async function DashboardPage() {
     Math.ceil((trialEnds.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   )
 
-  if (trialDaysLeft <= 0) {
+  if (trialDaysLeft <= 0 && !showVerifyBanner) {
     return <TrialExpiredBlock />
   }
 
   const trialProgress = Math.min(100, ((14 - trialDaysLeft) / 14) * 100)
 
   return (
-    <TrialDashboard
-      firstName={firstName}
-      trialDaysLeft={trialDaysLeft}
-      trialProgress={trialProgress}
-      posts={posts}
-    />
+    <>
+      {showVerifyBanner && <VerifyPaymentBanner />}
+      <TrialDashboard
+        firstName={firstName}
+        trialDaysLeft={trialDaysLeft}
+        trialProgress={trialProgress}
+        posts={posts}
+      />
+    </>
   )
 }

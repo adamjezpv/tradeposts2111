@@ -37,8 +37,8 @@ export default async function SuccessPage({
   const sessionId = params.session_id ?? ''
 
   if (attempt > 8) {
-    // After ~24 seconds of retries, give up and send to dashboard
-    redirect('/dashboard')
+    // After ~24 seconds of retries, send to dashboard with verify flag
+    redirect('/dashboard?verify=1')
   }
 
   const nextAttemptUrl = sessionId

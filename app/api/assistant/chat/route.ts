@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       config: {
         systemInstruction: SYSTEM_PROMPT,
         temperature: 0.8,

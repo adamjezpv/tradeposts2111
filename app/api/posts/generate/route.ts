@@ -1,5 +1,4 @@
-export const runtime = 'edge'
-
+import { GoogleGenAI } from '@google/genai'
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -13,23 +12,6 @@ interface Location {
   generation_interval_days: number | null
   posting_days_of_week: number[] | null
   posting_hour: number | null
-}
-
-interface GroqMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
-}
-
-interface GroqResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
-  usage?: {
-    prompt_tokens: number
-    completion_tokens: number
-  }
 }
 
 interface GeneratedPosts {
@@ -66,9 +48,9 @@ function computeScheduleDate(location: Location): string {
 }
 
 export async function POST(request: NextRequest) {
-  const groqApiKey = process.env.GROQ_API_KEY
-  if (!groqApiKey || groqApiKey === 'your_groq_api_key_here') {
-    return NextResponse.json({ error: 'GROQ_API_KEY is not configured' }, { status: 503 })
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 503 })
   }
 
   const supabase = createServerClient(
@@ -122,52 +104,37 @@ export async function POST(request: NextRequest) {
 
   const systemPrompt = buildSystemPrompt(businessType, topic)
 
-  const messages: GroqMessage[] = [
-    { role: 'system', content: systemPrompt },
-    {
-      role: 'user',
-      content: `Wygeneruj paczkę postów dla biznesu: ${location.business_name}. Zwróć wyłącznie poprawny obiekt JSON.`,
-    },
-  ]
+  const ai = new GoogleGenAI({ apiKey })
+  const userPrompt = `Wygeneruj paczkę postów dla biznesu: ${location.business_name}. Zwróć wyłącznie poprawny obiekt JSON.`
 
-  let groqData: GroqResponse
+  let rawContent: string
   try {
-    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages,
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      config: {
+        systemInstruction: systemPrompt,
         temperature: 0.85,
-        max_tokens: 2048,
-        response_format: { type: 'json_object' },
-      }),
+        maxOutputTokens: 2048,
+      },
+      contents: userPrompt,
     })
-
-    if (!groqResponse.ok) {
-      const errText = await groqResponse.text()
-      return NextResponse.json(
-        { error: `Groq API error: ${groqResponse.status}`, detail: errText },
-        { status: 502 }
-      )
+    rawContent = response.text ?? ''
+    if (!rawContent) {
+      return NextResponse.json({ error: 'Empty response from Gemini' }, { status: 502 })
     }
-
-    groqData = await groqResponse.json() as GroqResponse
   } catch (err) {
     return NextResponse.json(
-      { error: 'Failed to reach Groq API', detail: String(err) },
+      { error: 'Gemini API error', detail: String(err) },
       { status: 502 }
     )
   }
 
-  const rawContent = groqData.choices?.[0]?.message?.content ?? ''
+  // Strip markdown code fences if present
+  const cleaned = rawContent.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
 
   let parsed: GeneratedPosts
   try {
-    const obj = JSON.parse(rawContent) as Record<string, unknown>
+    const obj = JSON.parse(cleaned) as Record<string, unknown>
     if (
       typeof obj.google !== 'string' ||
       typeof obj.facebook !== 'string' ||
@@ -214,9 +181,9 @@ export async function POST(request: NextRequest) {
   await supabase.from('ai_usage_log').insert({
     user_id: user.id,
     location_id: location.id,
-    model: 'groq/llama-3.3-70b-versatile',
-    input_tokens: groqData.usage?.prompt_tokens ?? null,
-    output_tokens: groqData.usage?.completion_tokens ?? null,
+    model: 'gemini-2.5-flash',
+    input_tokens: null,
+    output_tokens: null,
     cost_usd: 0,
   })
 
